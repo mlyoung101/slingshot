@@ -106,7 +106,7 @@ lsp::requests::Initialize::Result initialise(const lsp::requests::Initialize::Pa
 				},
 				.serverInfo = lsp::InitializeResultServerInfo{
 					.name    = "Slingshot",
-					.version = "1.0.0"
+					.version = SLINGSHOT_VERSION,
 				},
 			};
 }

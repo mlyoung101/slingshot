@@ -90,7 +90,7 @@ int main() {
         sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e thread %t] [%^%l%$] [%s:%# %!] %v");
     }
 
-    SPDLOG_INFO("Slingshot LSP - (c) 2023-2025 M. L. Young. Licenced under the MPL 2.0.");
+    SPDLOG_INFO("Slingshot LSP v{} - (c) 2023-2025 M. L. Young. Licenced under the MPL 2.0.", SLINGSHOT_VERSION);
     SPDLOG_INFO("Slang version: {}.{}", VersionInfo::getMajor(), VersionInfo::getMinor());
 
     g_debugger.boot(REMOTE_DEBUGGER_PORT);

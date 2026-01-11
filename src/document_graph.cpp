@@ -12,6 +12,8 @@
 #include <graaflib/graph.h>
 #include <graaflib/io/dot.h>
 #include <graaflib/types.h>
+#include <lsp/messages.h>
+#include <lsp/types.h>
 #include <optional>
 #include <spdlog/spdlog.h>
 #include <string>
@@ -36,6 +38,26 @@ std::optional<std::vector<std::filesystem::path>> DocumentGraph::topologicalSort
     if (!hasValue(sorted)) {
         SPDLOG_ERROR("Failed to perform topological sort of document graph; this graph has cycles!");
         SPDLOG_ERROR("This probably means your project is malformed and has dependency cycles.");
+
+        // NOTE Neovim doesn't seem to like this, so we do the one below instead
+        // display a message in the client too
+        // lsp::notifications::Window_ShowMessage::Params msg;
+        // msg.type = lsp::MessageType::Warning;
+        // msg.message = "Failed to topologically sort document graph. Project is malformed and has dependency
+        // cycles."; g_msgHandler->sendNotification<lsp::notifications::Window_ShowMessage>(std::move(msg));
+
+        // display a message in the client too
+        // in Neovim this actually displays like a confirmation prompt
+        lsp::requests::Window_ShowMessageRequest::Params msg2;
+        msg2.type = lsp::MessageType::Warning;
+        msg2.message = "Slingshot: Indexing failed. Project is malformed and has dependency cycles.";
+        msg2.actions = std::vector<lsp::MessageActionItem>();
+        msg2.actions->push_back(lsp::MessageActionItem { "Acknowledge" });
+        // don't care
+        (void) g_msgHandler->sendRequest<lsp::requests::Window_ShowMessageRequest>(std::move(msg2));
+
+        // TODO identify the cycle for debugging
+
         return std::nullopt;
     }
 
@@ -88,12 +110,13 @@ void DocumentGraph::registerRequiredSymbol(const std::filesystem::path &path, co
 }
 
 void DocumentGraph::dumpDot() {
+    // TODO lay this out horizontally, needs upstream modification
     const auto vertex_writer { [](graaf::vertex_id_t vertex_id,
                                    const std::filesystem::path &vertex) -> std::string {
         return fmt::format("label=\"{}: {}\"", vertex_id, vertex.string());
     } };
 
-    const auto edge_writer { [](const graaf::edge_id_t &edge_id, const std::string &edge) -> std::string {
+    const auto edge_writer { [](const graaf::edge_id_t &, const std::string &edge) -> std::string {
         return fmt::format("label=\"{}\"", edge);
     } };
 

@@ -59,7 +59,8 @@ target_link_libraries(slingshot PRIVATE spdlog::spdlog fmt::fmt slang::slang lsp
 # note on diagnostic colour: https://stackoverflow.com/a/73349744/5007892
 target_compile_options(slingshot PRIVATE "-Wall" "-Wextra" "-Wno-unused-parameter" "-ggdb"
     "-fdiagnostics-color=always")
-target_compile_definitions(slingshot PRIVATE "-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE")
+target_compile_definitions(slingshot PRIVATE "-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE"
+    "-DSLINGSHOT_VERSION=\"${CMAKE_PROJECT_VERSION}\"")
 
 #### LINKER
 message(STATUS "Checking if mold is available")

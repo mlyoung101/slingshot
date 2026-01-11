@@ -45,6 +45,10 @@ posted!
 Slingshot is being developed in my free time, and I'm hoping to work on it somewhat during my PhD. One day, it
 might become a joint project of my PhD lab, hopefully.
 
+### Known supported editors
+- Neovim v0.11+
+- Helix
+
 ## Building and running
 ### Building and environment
 You will need:

@@ -5,12 +5,8 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #include "slingshot/completion.hpp"
-#include "slingshot/conversions.hpp"
-#include "slingshot/indexing.hpp"
 #include "slingshot/language.hpp"
-#include "slingshot/slingshot.hpp"
 #include <ankerl/unordered_dense.h>
-#include <filesystem>
 #include <lsp/messages.h>
 #include <lsp/types.h>
 #include <lsp/uri.h>
