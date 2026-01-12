@@ -5,11 +5,15 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #pragma once
+
+#if SLINGSHOT_ENABLE_REMOTE_DEBUGGER
 #include <sockpp/inet_address.h>
 #include <sockpp/socket.h>
 #include <sockpp/tcp_acceptor.h>
 #include <sockpp/tcp_socket.h>
 #include <sockpp/udp_socket.h>
+#endif
+
 #include <string>
 #include <thread>
 
@@ -32,10 +36,12 @@ public:
     }
 
 private:
+#if SLINGSHOT_ENABLE_REMOTE_DEBUGGER
     sockpp::tcp_acceptor acceptor;
     sockpp::tcp_socket socket;
     sockpp::inet_address peer;
     std::thread thread;
+#endif
 
     void debuggerThread();
     std::string processMsg(std::string msg);
