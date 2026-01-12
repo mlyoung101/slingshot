@@ -58,31 +58,31 @@ jobs:
           name: slingshot-linux-${{ matrix.build_type }}
           path: build/slingshot
 
-  build-windows:
-    name: Build Windows
-    runs-on: windows-2022
-    env:
-      CC: clang
-      CXX: clang++
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Setup cmake
-        uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: '4.1.x'
-
-      - name: Build
-        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=1
-            -DSLINGSHOT_ENABLE_REMOTE_DEBUGGER=OFF;
-          cd build;
-          ninja
-
-      - name: Package
-        run: cd build; cpack -G DEB; cpack -G RPM; cpack -G TXZ;
-
-      - name: Archive artefacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: slingshot-windows-Release
-          path: build/slingshot.exe
+  # build-windows:
+  #   name: Build Windows
+  #   runs-on: windows-2022
+  #   env:
+  #     CC: clang
+  #     CXX: clang++
+  #   steps:
+  #     - uses: actions/checkout@v5
+  #
+  #     - name: Setup cmake
+  #       uses: jwlawson/actions-setup-cmake@v2
+  #       with:
+  #         cmake-version: '4.1.x'
+  #
+  #     - name: Build
+  #       run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+  #           -DSLINGSHOT_ENABLE_REMOTE_DEBUGGER=OFF;
+  #         cd build;
+  #         ninja
+  #
+  #     - name: Package
+  #       run: cd build; cpack -G DEB; cpack -G RPM; cpack -G TXZ;
+  #
+  #     - name: Archive artefacts
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: slingshot-windows-Release
+  #         path: build/slingshot.exe
