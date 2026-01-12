@@ -14,7 +14,6 @@ if (CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
-
 set(CMAKE_C_STANDARD 11) # C11
 set(CMAKE_CXX_STANDARD 23) # C++23
 cmake_policy(SET CMP0144 NEW)
@@ -36,6 +35,10 @@ add_executable(slingshot
 )
 target_include_directories(slingshot PRIVATE include)
 
+option(SLINGSHOT_ENABLE_REMOTE_DEBUGGER "Enables the remote debugger functionality in Slingshot. Does not work
+    on Windows." TRUE)
+message(STATUS "Remote debugger enabled: ${SLINGSHOT_ENABLE_REMOTE_DEBUGGER}")
+
 # find deps
 CPMAddPackage("gh:gabime/spdlog@1.16.0")
 CPMAddPackage("gh:fmtlib/fmt#12.1.0")
@@ -45,7 +48,9 @@ CPMAddPackage("gh:nlohmann/json@3.12.0")
 CPMAddPackage("gh:leon-bckl/lsp-framework#1.3.0")
 CPMAddPackage("gh:bshoshany/thread-pool@5.0.0")
 CPMAddPackage("gh:marzer/tomlplusplus@3.4.0")
-CPMAddPackage(URI "gh:fpagliughi/sockpp#v1.x" OPTIONS "SOCKPP_BUILD_STATIC ON")
+if (SLINGSHOT_ENABLE_REMOTE_DEBUGGER)
+    CPMAddPackage(URI "gh:fpagliughi/sockpp#v1.x" OPTIONS "SOCKPP_BUILD_STATIC ON")
+endif()
 CPMAddPackage(URI "gh:bobluppes/graaf#e0ec371ae8266fb72d986c0de5c47286f34a0589" OPTIONS "SKIP_TESTS ON"
     "SKIP_EXAMPLES ON" "SKIP_BENCHMARKS ON")
 
@@ -54,13 +59,20 @@ target_include_directories(BS_thread_pool INTERFACE ${BS_thread_pool_SOURCE_DIR}
 
 target_link_libraries(slingshot PRIVATE spdlog::spdlog fmt::fmt slang::slang lsp
     unordered_dense::unordered_dense nlohmann_json::nlohmann_json BS_thread_pool tomlplusplus::tomlplusplus
-    sockpp-static Graaf::Graaf)
+    Graaf::Graaf)
+
+if (SLINGSHOT_ENABLE_REMOTE_DEBUGGER)
+    target_link_libraries(slingshot PRIVATE sockpp-static)
+endif()
 
 # note on diagnostic colour: https://stackoverflow.com/a/73349744/5007892
 target_compile_options(slingshot PRIVATE "-Wall" "-Wextra" "-Wno-unused-parameter" "-ggdb"
     "-fdiagnostics-color=always")
-target_compile_definitions(slingshot PRIVATE "-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE"
-    "-DSLINGSHOT_VERSION=\"${CMAKE_PROJECT_VERSION}\"")
+target_compile_definitions(slingshot PRIVATE
+    "-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE"
+    "-DSLINGSHOT_VERSION=\"${CMAKE_PROJECT_VERSION}\""
+    "-DSLINGSHOT_ENABLE_REMOTE_DEBUGGER=${SLINGSHOT_ENABLE_REMOTE_DEBUGGER}"
+)
 
 #### LINKER
 message(STATUS "Checking if mold is available")

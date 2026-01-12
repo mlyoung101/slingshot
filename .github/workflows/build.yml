@@ -73,7 +73,8 @@ jobs:
           cmake-version: '4.1.x'
 
       - name: Build
-        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=1;
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+            -DSLINGSHOT_ENABLE_REMOTE_DEBUGGER=OFF;
           cd build;
           ninja
 
