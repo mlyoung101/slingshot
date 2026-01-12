@@ -6,6 +6,8 @@
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #include "slingshot/remote_debug.hpp"
 #include "slingshot/slingshot.hpp"
+
+#if SLINGSHOT_ENABLE_REMOTE_DEBUGGER
 #include <array>
 #include <csignal>
 #include <fstream>
@@ -108,3 +110,21 @@ std::string RemoteDebugger::processMsg(std::string msg) {
 
     return fmt::format("Command '{}' not found", msg);
 }
+
+#else
+
+using namespace slingshot;
+
+void RemoteDebugger::boot(int) {
+    SPDLOG_INFO("Remote debugger has been disabled.");
+}
+
+void RemoteDebugger::debuggerThread() {
+    SPDLOG_INFO("Remote debugger has been disabled.");
+}
+
+std::string RemoteDebugger::processMsg(std::string msg) {
+    return "Remote debugger disabled.";
+}
+
+#endif

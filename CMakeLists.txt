@@ -71,8 +71,13 @@ target_compile_options(slingshot PRIVATE "-Wall" "-Wextra" "-Wno-unused-paramete
 target_compile_definitions(slingshot PRIVATE
     "-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE"
     "-DSLINGSHOT_VERSION=\"${CMAKE_PROJECT_VERSION}\""
-    "-DSLINGSHOT_ENABLE_REMOTE_DEBUGGER=${SLINGSHOT_ENABLE_REMOTE_DEBUGGER}"
 )
+
+if (SLINGSHOT_ENABLE_REMOTE_DEBUGGER)
+    target_compile_definitions(slingshot PRIVATE "-DSLINGSHOT_ENABLE_REMOTE_DEBUGGER=1")
+else()
+    target_compile_definitions(slingshot PRIVATE "-DSLINGSHOT_ENABLE_REMOTE_DEBUGGER=0")
+endif()
 
 #### LINKER
 message(STATUS "Checking if mold is available")
