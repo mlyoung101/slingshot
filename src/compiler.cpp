@@ -241,7 +241,7 @@ void CompilationManager::indexDocument(const std::string &document, const std::f
             // figure out what symbols this document provides and requires
             auto imports = ImportLocator::locateRequiredProvidedImports(tree, path);
             {
-                // auto lock = g_indexManager.acquireWriteLock();
+                auto lock = g_indexManager.acquireWriteLock();
                 for (const auto &provided : imports.providedSymbols) {
                     g_indexManager.documentGraph->registerProvidedSymbol(path, provided);
                 }
