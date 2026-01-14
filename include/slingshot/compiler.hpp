@@ -7,6 +7,7 @@
 #pragma once
 #include "slingshot/import_locator.hpp"
 #include <atomic>
+#include <mutex>
 #include <slang/ast/Compilation.h>
 #include <slang/syntax/SyntaxTree.h>
 #define BS_THREAD_POOL_NATIVE_EXTENSIONS
@@ -96,16 +97,10 @@ public:
         return sourceMgr;
     }
 
-    /// Returns a write (unique) lock on the compiler manager
-    [[nodiscard]] auto acquireWriteLock() {
-        SPDLOG_TRACE("Attempt to acquire write lock");
-        return std::unique_lock<std::shared_mutex>(lock);
-    }
-
-    /// Returns a read (shared) lock on the compiler manager
-    [[nodiscard]] auto acquireReadLock() {
-        SPDLOG_TRACE("Attempt to acquire read lock");
-        return std::shared_lock<std::shared_mutex>(lock);
+    /// Returns a lock on the compiler manager
+    [[nodiscard]] auto acquireLock() {
+        SPDLOG_TRACE("Attempt to acquire lock");
+        return std::lock_guard(lock);
     }
 
 private:
@@ -117,7 +112,7 @@ private:
     ankerl::unordered_dense::map<std::filesystem::path, Imports> importTable;
     ankerl::unordered_dense::map<std::filesystem::path, SourceBuffer> bufMap;
     std::shared_ptr<SourceManager> sourceMgr = std::make_shared<SourceManager>();
-    std::shared_mutex lock;
+    std::recursive_mutex lock;
     std::atomic_int indexingJobsInProgress;
 
     /// Performs a bulk compilation of all the documents in the index, once the document graph has been built

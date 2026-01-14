@@ -6,7 +6,6 @@
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #include "slingshot/indexing.hpp"
 #include "slingshot/compiler.hpp"
-#include "slingshot/lang_lifter.hpp"
 #include "slingshot/language.hpp" // NECESSARY for JSON conversion
 #include "slingshot/slingshot.hpp"
 #include <ankerl/unordered_dense.h>
@@ -35,7 +34,7 @@ void IndexManager::insert(const std::filesystem::path &path, const std::string &
     auto maybeEntry = retrieve(realPath);
 
     // take the mutex before we push to the index
-    auto guard = acquireWriteLock();
+    auto guard = acquireLock();
     if (maybeEntry == std::nullopt) {
         SPDLOG_DEBUG("Path {} not yet in index, inserting brand new entry", realPath.string());
         index[realPath] = std::make_shared<IndexEntry>(realPath, hash);
@@ -70,7 +69,7 @@ void IndexManager::associateParse(
     auto result = retrieve(path);
 
     // hold a lock guard, since we're calling this from CompilerManager which is multi-threaded
-    auto lock = acquireWriteLock();
+    auto lock = acquireLock();
     if (result.has_value()) {
         (*result)->tree = tree;
         SPDLOG_TRACE("Result has value, attempting to mark as valid");
@@ -84,7 +83,7 @@ void IndexManager::associateLangDoc(const std::filesystem::path &path, const lan
     auto result = retrieve(path);
 
     // hold a lock guard, since we're calling this from CompilerManager which is multi-threaded
-    auto lock = acquireWriteLock();
+    auto lock = acquireLock();
     if (result.has_value()) {
         (*result)->doc = doc;
     } else {
@@ -93,7 +92,7 @@ void IndexManager::associateLangDoc(const std::filesystem::path &path, const lan
 }
 
 std::optional<IndexEntry::Ptr> IndexManager::retrieve(const std::filesystem::path &path, uint64_t hash) {
-    auto guard = acquireReadLock();
+    auto guard = acquireLock();
     auto realPath = std::filesystem::absolute(path);
     if (!index.contains(realPath)) {
         return std::nullopt;
@@ -108,7 +107,7 @@ std::optional<IndexEntry::Ptr> IndexManager::retrieve(const std::filesystem::pat
 }
 
 std::optional<IndexEntry::Ptr> IndexManager::retrieve(const std::filesystem::path &path) {
-    auto guard = acquireReadLock();
+    auto guard = acquireLock();
     auto realPath = std::filesystem::absolute(path);
     if (!index.contains(realPath)) {
         return std::nullopt;
@@ -158,7 +157,7 @@ void IndexManager::walkDir(const std::filesystem::path &path) {
 }
 
 ankerl::unordered_dense::set<std::shared_ptr<slang::syntax::SyntaxTree>> IndexManager::getAllSyntaxTrees() {
-    auto lock = acquireReadLock();
+    auto lock = acquireLock();
     ankerl::unordered_dense::set<std::shared_ptr<slang::syntax::SyntaxTree>> out;
     SPDLOG_DEBUG("Attempting to find all syntax trees");
 
@@ -176,7 +175,7 @@ ankerl::unordered_dense::set<std::shared_ptr<slang::syntax::SyntaxTree>> IndexMa
 }
 
 std::string IndexManager::debugDump() {
-    auto lock = acquireReadLock();
+    auto lock = acquireLock();
     std::stringstream stream;
     for (const auto &entry : index) {
         const auto &[key, value] = entry;
@@ -186,7 +185,7 @@ std::string IndexManager::debugDump() {
 }
 
 std::string IndexManager::dumpLangTrees() {
-    auto lock = acquireReadLock();
+    auto lock = acquireLock();
     std::stringstream stream;
     for (const auto &entry : index) {
         const auto &[key, value] = entry;
@@ -200,7 +199,7 @@ std::string IndexManager::dumpLangTrees() {
 }
 
 std::string IndexManager::dumpSources() {
-    auto lock = acquireReadLock();
+    auto lock = acquireLock();
     std::stringstream stream;
     for (const auto &entry : index) {
         const auto &[key, value] = entry;
@@ -213,7 +212,7 @@ std::string IndexManager::dumpSources() {
 }
 
 std::vector<lang::Document> IndexManager::getAllLangDocs() {
-    auto lock = acquireReadLock();
+    auto lock = acquireLock();
     std::vector<lang::Document> out;
     for (const auto &[key, value] : index) {
         if (hasValue(value->doc)) {

@@ -64,7 +64,7 @@ void LSPDiagnosticClient::report(const ReportedDiagnostic &diagnostic) {
     SPDLOG_TRACE("Received a diagnostic");
 
     {
-        auto lock = g_compilerManager.acquireReadLock();
+        auto lock = g_compilerManager.acquireLock();
 
         if (!g_compilerManager.bufferIdsInverse.contains(diagnostic.location.buffer())) {
             SPDLOG_ERROR("Diagnostic in buffer ID {} could not be found in bufferIdsInverse",
@@ -143,7 +143,7 @@ void CompilationManager::submitCompilationJob(
     SourceBuffer buf;
 
     {
-        auto lock = acquireWriteLock();
+        auto lock = acquireLock();
 
         // FIXME this may leak memory
         buf = sourceMgr->assignText(document);
@@ -208,7 +208,7 @@ void CompilationManager::indexDocument(const std::string &document, const std::f
     indexingJobsInProgress++;
 
     {
-        auto lock = acquireWriteLock();
+        auto lock = acquireLock();
 
         // FIXME this may leak memory
         buf = sourceMgr->assignText(document);
@@ -241,7 +241,8 @@ void CompilationManager::indexDocument(const std::string &document, const std::f
             // figure out what symbols this document provides and requires
             auto imports = ImportLocator::locateRequiredProvidedImports(tree, path);
             {
-                auto lock = g_indexManager.acquireWriteLock();
+                auto indexLock = g_indexManager.acquireLock();
+                auto compilerLock = acquireLock();
                 for (const auto &provided : imports.providedSymbols) {
                     g_indexManager.documentGraph->registerProvidedSymbol(path, provided);
                 }
@@ -311,7 +312,7 @@ std::shared_ptr<ast::Compilation> CompilationManager::doAstParse(const std::file
     // only initially add the document itself as a syntax tree, we'll discover the other documents later
     compilation->addSyntaxTree(tree);
 
-    auto lock = acquireReadLock();
+    auto lock = acquireLock();
     if (!requiredDocuments.contains(path)) {
         SPDLOG_WARN("Required documents for path {} are unknown!", path.string());
     } else {
@@ -383,7 +384,7 @@ void CompilationManager::doLifting(
 void CompilationManager::issueDiagnostics(
     const std::filesystem::path &path, const LSPDiagnosticClient::Ptr &diagClient) {
     // we only do this if the text document is open, to avoid extraneous errors
-    auto lock = acquireReadLock();
+    auto lock = acquireLock();
     if (openFiles.contains(path)) {
         SPDLOG_DEBUG("Issue {} diagnostics to client for buffer {}", diagClient->getLspDiagnostics().size(),
             path.string());
@@ -414,8 +415,8 @@ void CompilationManager::maybeFinaliseIndexingProgress() {
 void CompilationManager::performBulkCompilation() {
     SPDLOG_INFO("Performing bulk compilation");
 
-    auto indexLock = g_indexManager.acquireReadLock();
-    auto compilerLock = g_compilerManager.acquireWriteLock();
+    auto indexLock = g_indexManager.acquireLock();
+    auto compilerLock = acquireLock();
 
     g_indexManager.documentGraph->finaliseOutstandingSymbols();
 
@@ -462,7 +463,6 @@ void CompilationManager::performBulkCompilation() {
 
     // we also need to recompile all the open files now
     SPDLOG_DEBUG("Recompiling documents now that indexing is done");
-    compilerLock.unlock();
     for (const auto &doc : openFiles) {
         submitCompilationJob(readFile(doc), doc);
     }

@@ -138,16 +138,10 @@ public:
 
     std::string dumpSources();
 
-    /// Returns a write (unique) lock on the whole index
-    [[nodiscard]] auto acquireWriteLock() {
-        SPDLOG_TRACE("Attempt to acquire write lock");
-        return std::unique_lock<std::shared_mutex>(lock);
-    }
-
-    /// Returns a read (shared) lock on the whole index
-    [[nodiscard]] auto acquireReadLock() {
-        SPDLOG_TRACE("Attempt to acquire read lock");
-        return std::shared_lock<std::shared_mutex>(lock);
+    /// Returns a lock on the whole index
+    [[nodiscard]] auto acquireLock() {
+        SPDLOG_TRACE("Attempt to acquire lock");
+        return std::lock_guard(lock);
     }
 
     /// List of include dirs, pulled from the config TOML
@@ -164,7 +158,7 @@ public:
 
 private:
     /// Private R/W lock that can be accessed by the acquire{Read/Write}Lock methods
-    std::shared_mutex lock;
+    std::recursive_mutex lock;
     /// The underlying index data structure
     ankerl::unordered_dense::map<std::filesystem::path, IndexEntry::Ptr> index;
 };
