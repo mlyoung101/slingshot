@@ -57,6 +57,29 @@ class Imports {
 public:
     std::vector<std::string> requiredSymbols;
     std::vector<std::string> providedSymbols;
+
+    bool operator==(const Imports &rhs) const {
+        if (requiredSymbols.size() != rhs.requiredSymbols.size()) {
+            return false;
+        }
+        if (providedSymbols.size() != rhs.requiredSymbols.size()) {
+            return false;
+        }
+
+        for (size_t i = 0; i < requiredSymbols.size(); i++) {
+            if (requiredSymbols[i] != rhs.requiredSymbols[i]) {
+                return false;
+            }
+        }
+
+        for (size_t i = 0; i < providedSymbols.size(); i++) {
+            if (providedSymbols[i] != rhs.providedSymbols[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 };
 
 class ImportLocator {

@@ -241,13 +241,14 @@ void CompilationManager::indexDocument(const std::string &document, const std::f
             // figure out what symbols this document provides and requires
             auto imports = ImportLocator::locateRequiredProvidedImports(tree, path);
             {
-                auto lock = g_indexManager.acquireWriteLock();
+                // auto lock = g_indexManager.acquireWriteLock();
                 for (const auto &provided : imports.providedSymbols) {
                     g_indexManager.documentGraph->registerProvidedSymbol(path, provided);
                 }
                 for (const auto &required : imports.requiredSymbols) {
                     g_indexManager.documentGraph->registerRequiredSymbol(path, required);
                 }
+                importTable[path] = imports;
             }
 
             // lift to our own internal higher level representation for completion
@@ -314,6 +315,13 @@ std::shared_ptr<ast::Compilation> CompilationManager::doAstParse(const std::file
     if (!requiredDocuments.contains(path)) {
         SPDLOG_WARN("Required documents for path {} are unknown!", path.string());
     } else {
+        // determine if the document graph needs rebuilding, by checking the import table
+        auto imports = ImportLocator::locateRequiredProvidedImports(tree, path);
+        if (importTable[path] != imports) {
+            SPDLOG_WARN("Import table changed, document graph must be rebuilt!");
+            // TODO rebuild it
+        }
+
         auto docs = requiredDocuments.at(path);
         for (const auto &doc : docs) {
             auto result = g_indexManager.retrieve(doc);

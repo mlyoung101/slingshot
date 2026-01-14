@@ -5,6 +5,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #pragma once
+#include "slingshot/import_locator.hpp"
 #include <atomic>
 #include <slang/ast/Compilation.h>
 #include <slang/syntax/SyntaxTree.h>
@@ -108,10 +109,12 @@ public:
     }
 
 private:
-    BS::thread_pool<> pool;
+    BS::thread_pool<> pool{2};
     ankerl::unordered_dense::map<std::filesystem::path, Diagnostics> diags;
     /// mapping of a document to all the documents it requires to build the AST
     ankerl::unordered_dense::map<std::filesystem::path, std::vector<std::filesystem::path>> requiredDocuments;
+    /// mapping between a document and the last recorded Imports collected via the Import Locator
+    ankerl::unordered_dense::map<std::filesystem::path, Imports> importTable;
     ankerl::unordered_dense::map<std::filesystem::path, SourceBuffer> bufMap;
     std::shared_ptr<SourceManager> sourceMgr = std::make_shared<SourceManager>();
     std::shared_mutex lock;
