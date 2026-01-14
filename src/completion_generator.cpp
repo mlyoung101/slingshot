@@ -6,6 +6,7 @@
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #include "slingshot/completion.hpp"
 #include "slingshot/language.hpp"
+#include "slingshot/slingshot.hpp"
 #include <ankerl/unordered_dense.h>
 #include <lsp/messages.h>
 #include <lsp/types.h>
@@ -16,6 +17,7 @@
 #include <slang/syntax/AllSyntax.h>
 #include <slang/syntax/SyntaxTree.h>
 #include <slang/text/SourceLocation.h>
+#include <spdlog/fmt/bundled/format.h>
 #include <spdlog/spdlog.h>
 #include <string>
 #include <vector>
@@ -167,6 +169,34 @@ std::vector<lsp::CompletionItem> CompletionGenerator::generateVariableSameModule
         // no need to filter local variables
         for (const auto &var : module->variables) {
             out.push_back(lsp::CompletionItem { .label = var, .kind = lsp::CompletionItemKind::Variable });
+        }
+    }
+    return out;
+}
+
+std::vector<lsp::CompletionItem> CompletionGenerator::generateModuleInstantiations() {
+    std::vector<lsp::CompletionItem> out;
+    auto docs = g_indexManager.getAllLangDocs();
+    for (const auto &doc : docs) {
+        for (const auto &module : doc.modules) {
+            std::string snippet = fmt::format("{} $1 (\n", module.name);
+
+            for (size_t i = 0; i < module.ports.size(); i++) {
+                snippet += fmt::format("\t\t.{} (${}){}\n", module.ports[i].name,
+                    i + 2, // this is the snippet cursor index, like $1, $2, etc; but we used $1 above
+                    i == module.ports.size() - 1 ? "" : "," // only comma if we have a next element
+                );
+            }
+
+            snippet += ");";
+
+            out.push_back(lsp::CompletionItem {
+                .label = "module " + module.name,
+                .kind = lsp::CompletionItemKind::Constructor,
+                .filterText = module.name,
+                .insertText = snippet,
+                .insertTextFormat = lsp::InsertTextFormat::Snippet,
+            });
         }
     }
     return out;

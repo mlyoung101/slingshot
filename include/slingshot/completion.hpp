@@ -136,6 +136,8 @@ public:
     static std::vector<lsp::CompletionItem> generateVariableSameModuleFilter(
         const std::optional<std::string> &activeModule, const lang::Document &doc,
         const lang::PortDirection &filter);
+
+    static std::vector<lsp::CompletionItem> generateModuleInstantiations();
 };
 
 } // namespace slingshot

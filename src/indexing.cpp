@@ -212,34 +212,13 @@ std::string IndexManager::dumpSources() {
     return stream.str();
 }
 
-std::optional<std::shared_ptr<SyntaxTree>> IndexManager::locateDocumentForModule(const std::string &name) {
+std::vector<lang::Document> IndexManager::getAllLangDocs() {
     auto lock = acquireReadLock();
-    for (const auto &entry : index) {
-        const auto &[key, value] = entry;
-        if (value->tree != nullptr && value->doc != std::nullopt) {
-            // we have a valid document, let's investigate
-            auto query = value->doc->getModuleByName(name);
-            if (query.has_value() && query != std::nullopt) {
-                SPDLOG_DEBUG("Found document for module '{}': {}", name, key.string());
-                return value->tree;
-            }
+    std::vector<lang::Document> out;
+    for (const auto &[key, value] : index) {
+        if (hasValue(value->doc)) {
+            out.push_back(*value->doc);
         }
     }
-    return std::nullopt;
-}
-
-std::optional<std::shared_ptr<SyntaxTree>> IndexManager::locateDocumentForPackage(const std::string &name) {
-    auto lock = acquireReadLock();
-    for (const auto &entry : index) {
-        const auto &[key, value] = entry;
-        if (value->tree != nullptr && value->doc != std::nullopt) {
-            // we have a valid document, let's investigate
-            auto query = value->doc->getPackageByName(name);
-            if (query.has_value() && query != std::nullopt) {
-                SPDLOG_DEBUG("Found document for package '{}': {}", name, key.string());
-                return value->tree;
-            }
-        }
-    }
-    return std::nullopt;
+    return out;
 }

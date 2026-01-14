@@ -129,6 +129,7 @@ void CompletionSyntaxVisitor::handle(const DataDeclarationSyntax &syntax) {
         RECOMMEND(CompletionGenerator::generateIf());
         RECOMMEND(CompletionGenerator::generateAlways());
         RECOMMEND(CompletionGenerator::generateVariableSameModule(activeModule, doc));
+        RECOMMEND(CompletionGenerator::generateModuleInstantiations());
         // don't recommend system tasks because we're more or less on the LHS of something
     })
 }

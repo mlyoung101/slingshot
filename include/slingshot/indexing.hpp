@@ -130,18 +130,13 @@ public:
     /// Retrieves all unique syntax trees from all parsed documents
     ankerl::unordered_dense::set<std::shared_ptr<slang::syntax::SyntaxTree>> getAllSyntaxTrees();
 
+    std::vector<lang::Document> getAllLangDocs();
+
     std::string debugDump();
 
     std::string dumpLangTrees();
 
     std::string dumpSources();
-
-    /// Tries to locate a valid syntax tree (document) that declares the specified module
-    std::optional<std::shared_ptr<SyntaxTree>> locateDocumentForModule(const std::string &name);
-
-    std::optional<std::shared_ptr<SyntaxTree>> locateDocumentForPackage(const std::string &name);
-
-    std::optional<std::shared_ptr<SyntaxTree>> locateDocumentForTypedef(const std::string &name);
 
     /// Returns a write (unique) lock on the whole index
     [[nodiscard]] auto acquireWriteLock() {
