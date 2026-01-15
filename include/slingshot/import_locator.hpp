@@ -5,6 +5,8 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #pragma once
+#include <ankerl/unordered_dense.h>
+#include <cstdint>
 #include <filesystem>
 #include <lsp/types.h>
 #include <memory>
@@ -58,34 +60,25 @@ public:
     std::vector<std::string> requiredSymbols;
     std::vector<std::string> providedSymbols;
 
-    bool operator==(const Imports &rhs) const {
-        if (requiredSymbols.size() != rhs.requiredSymbols.size()) {
-            return false;
+    uint64_t hash() {
+        uint64_t hash = 0xDEADBEEF;
+        for (const auto &sym : requiredSymbols) {
+            auto update = ankerl::unordered_dense::detail::wyhash::hash(sym.data(), sym.size());
+            hash = ankerl::unordered_dense::detail::wyhash::mix(hash, update);
         }
-        if (providedSymbols.size() != rhs.requiredSymbols.size()) {
-            return false;
+        for (const auto &sym : providedSymbols) {
+            auto update = ankerl::unordered_dense::detail::wyhash::hash(sym.data(), sym.size());
+            hash = ankerl::unordered_dense::detail::wyhash::mix(hash, update);
         }
-
-        for (size_t i = 0; i < requiredSymbols.size(); i++) {
-            if (requiredSymbols[i] != rhs.requiredSymbols[i]) {
-                return false;
-            }
-        }
-
-        for (size_t i = 0; i < providedSymbols.size(); i++) {
-            if (providedSymbols[i] != rhs.providedSymbols[i]) {
-                return false;
-            }
-        }
-
-        return true;
+        return hash;
     }
 };
 
 class ImportLocator {
 public:
     /// Uses the @ref ImportableFinderVisitor and index to locate required and provided symbols
-    static Imports locateRequiredProvidedImports(const std::shared_ptr<SyntaxTree> &tree, const std::filesystem::path &path);
+    static Imports locateRequiredProvidedImports(
+        const std::shared_ptr<SyntaxTree> &tree, const std::filesystem::path &path);
 };
 
 } // namespace slingshot

@@ -7,6 +7,7 @@
 #pragma once
 #include "slingshot/import_locator.hpp"
 #include <atomic>
+#include <cstdint>
 #include <mutex>
 #include <slang/ast/Compilation.h>
 #include <slang/syntax/SyntaxTree.h>
@@ -104,12 +105,12 @@ public:
     }
 
 private:
-    BS::thread_pool<> pool{};
+    BS::thread_pool<> pool {};
     ankerl::unordered_dense::map<std::filesystem::path, Diagnostics> diags;
     /// mapping of a document to all the documents it requires to build the AST
     ankerl::unordered_dense::map<std::filesystem::path, std::vector<std::filesystem::path>> requiredDocuments;
-    /// mapping between a document and the last recorded Imports collected via the Import Locator
-    ankerl::unordered_dense::map<std::filesystem::path, Imports> importTable;
+    /// mapping between a document and the hash of its Imports calculated by the import locator
+    ankerl::unordered_dense::map<std::filesystem::path, uint64_t> importHashes;
     ankerl::unordered_dense::map<std::filesystem::path, SourceBuffer> bufMap;
     std::shared_ptr<SourceManager> sourceMgr = std::make_shared<SourceManager>();
     std::recursive_mutex lock;
@@ -134,6 +135,9 @@ private:
     void issueDiagnostics(const std::filesystem::path &path, const LSPDiagnosticClient::Ptr &diagClient);
 
     void maybeFinaliseIndexingProgress();
+
+    void reIndexDocument(
+        const std::filesystem::path &path, const std::shared_ptr<slang::syntax::SyntaxTree> &tree);
 };
 
 } // namespace slingshot

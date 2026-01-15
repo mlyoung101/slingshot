@@ -249,7 +249,7 @@ void CompilationManager::indexDocument(const std::string &document, const std::f
                 for (const auto &required : imports.requiredSymbols) {
                     g_indexManager.documentGraph->registerRequiredSymbol(path, required);
                 }
-                importTable[path] = imports;
+                importHashes[path] = imports.hash();
             }
 
             // lift to our own internal higher level representation for completion
@@ -318,9 +318,13 @@ std::shared_ptr<ast::Compilation> CompilationManager::doAstParse(const std::file
     } else {
         // determine if the document graph needs rebuilding, by checking the import table
         auto imports = ImportLocator::locateRequiredProvidedImports(tree, path);
-        if (importTable[path] != imports) {
+        if (importHashes[path] != imports.hash()) {
             SPDLOG_WARN("Import table changed, document graph must be rebuilt!");
-            // TODO rebuild it
+            // this unlock and relock shenanigan is necessary to avoid deadlocks, at least according to
+            // ThreadSanitizer
+            lock.unlock();
+            reIndexDocument(path, tree);
+            lock.lock();
         }
 
         auto docs = requiredDocuments.at(path);
@@ -420,6 +424,14 @@ void CompilationManager::performBulkCompilation() {
     auto indexLock = g_indexManager.acquireLock();
     auto compilerLock = acquireLock();
 
+    // send progress notification
+    lsp::WorkDoneProgressReport report;
+    report.message = "Updating document graph";
+    lsp::notifications::Progress::Params progress;
+    progress.token = "SlingshotIndexProgress";
+    progress.value = lsp::toJson(std::move(report));
+    g_msgHandler->sendNotification<lsp::notifications::Progress>(std::move(progress));
+
     g_indexManager.documentGraph->finaliseOutstandingSymbols();
 
     // keep track of all the prior documents we've seen in our topological traversal
@@ -435,15 +447,7 @@ void CompilationManager::performBulkCompilation() {
 
     for (size_t i = 0; i < topoSort->size(); i++) {
         const auto &doc = topoSort->at(i);
-        SPDLOG_DEBUG("({}/{}) {}", i, topoSort->size(), doc.string());
-
-        // send progress notification
-        lsp::WorkDoneProgressReport report;
-        report.message = fmt::format("Bulk compiling ({}/{})", i, topoSort->size());
-        lsp::notifications::Progress::Params progress;
-        progress.token = "SlingshotIndexProgress";
-        progress.value = lsp::toJson(std::move(report));
-        g_msgHandler->sendNotification<lsp::notifications::Progress>(std::move(progress));
+        SPDLOG_TRACE("({}/{}) {}", i, topoSort->size(), doc.string());
 
         requiredDocuments[doc] = allPriorDocs;
 
@@ -475,4 +479,27 @@ done:
     endMsg.value = lsp::toJson(lsp::WorkDoneProgressEnd());
     g_msgHandler->sendNotification<lsp::notifications::Progress>(std::move(endMsg));
     g_indexManager.isInitialIndexInProgress = false;
+}
+
+void CompilationManager::reIndexDocument(
+    const std::filesystem::path &path, const std::shared_ptr<slang::syntax::SyntaxTree> &tree) {
+    SPDLOG_DEBUG("Reindexing document: {}", path.string());
+
+    // figure out what symbols this document provides and requires
+    auto imports = ImportLocator::locateRequiredProvidedImports(tree, path);
+    {
+        auto indexLock = g_indexManager.acquireLock();
+        auto compilerLock = acquireLock();
+        for (const auto &provided : imports.providedSymbols) {
+            g_indexManager.documentGraph->registerProvidedSymbol(path, provided);
+        }
+        for (const auto &required : imports.requiredSymbols) {
+            g_indexManager.documentGraph->registerRequiredSymbol(path, required);
+        }
+        importHashes[path] = imports.hash();
+    }
+
+    // TODO start a work in progress?
+
+    performBulkCompilation();
 }
