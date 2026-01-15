@@ -104,7 +104,7 @@ public:
     }
 
 private:
-    BS::thread_pool<> pool{2};
+    BS::thread_pool<> pool{};
     ankerl::unordered_dense::map<std::filesystem::path, Diagnostics> diags;
     /// mapping of a document to all the documents it requires to build the AST
     ankerl::unordered_dense::map<std::filesystem::path, std::vector<std::filesystem::path>> requiredDocuments;
