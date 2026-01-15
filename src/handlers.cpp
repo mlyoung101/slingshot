@@ -128,11 +128,13 @@ void textDocumentOpen(const lsp::notifications::TextDocument_DidOpen::Params &&p
     // register in the document database
     g_indexManager.insert(
         std::filesystem::absolute(params.textDocument.uri.path()), params.textDocument.text, false);
+    auto lock = g_compilerManager.acquireLock();
     g_compilerManager.openFiles.insert(std::filesystem::absolute(params.textDocument.uri.path()));
 }
 
 void textDocumentClose(const lsp::notifications::TextDocument_DidClose::Params &&params) {
     SPDLOG_DEBUG("Close document: {}", params.textDocument.uri.path());
+    auto lock = g_compilerManager.acquireLock();
     g_compilerManager.openFiles.erase(std::filesystem::absolute(params.textDocument.uri.path()));
 }
 
