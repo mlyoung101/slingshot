@@ -100,7 +100,7 @@ public:
     /// Returns a lock on the compiler manager
     [[nodiscard]] auto acquireLock() {
         SPDLOG_TRACE("Attempt to acquire lock");
-        return std::lock_guard(lock);
+        return std::unique_lock(lock);
     }
 
 private:

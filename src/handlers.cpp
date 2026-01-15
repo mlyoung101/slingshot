@@ -169,6 +169,7 @@ lsp::requests::TextDocument_Completion::Result textDocumentCompletion(
     auto path = std::filesystem::absolute(params.textDocument.uri.path()).string();
     SPDLOG_TRACE("Completion request in {}", path);
 
+    auto lock = g_indexManager.acquireLock();
     auto result = g_indexManager.retrieve(path);
     if (!result.has_value()) {
         SPDLOG_WARN("Document {} is not in index", path);
@@ -180,6 +181,7 @@ lsp::requests::TextDocument_Completion::Result textDocumentCompletion(
     }
 
     // ensure the index entry is valid
+    lock.unlock();
     (*result)->ensureValidByWaiting();
 
     return CompletionManager::getCompletions(path, params.position, *result);

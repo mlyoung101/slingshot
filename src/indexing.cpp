@@ -30,11 +30,10 @@ void IndexManager::insert(const std::filesystem::path &path, const std::string &
     SPDLOG_TRACE("Insert {}", realPath.string());
 
     auto hash = ankerl::unordered_dense::detail::wyhash::hash(document.c_str(), document.size());
-
     auto maybeEntry = retrieve(realPath);
 
     // take the mutex before we push to the index
-    auto guard = acquireLock();
+    auto lock = acquireLock();
     if (maybeEntry == std::nullopt) {
         SPDLOG_DEBUG("Path {} not yet in index, inserting brand new entry", realPath.string());
         index[realPath] = std::make_shared<IndexEntry>(realPath, hash);
@@ -46,6 +45,7 @@ void IndexManager::insert(const std::filesystem::path &path, const std::string &
     }
 
     // regardless, schedule a compilation job for this
+    lock.unlock();
     if (isIndex) {
         g_compilerManager.indexDocument(document, realPath);
     } else {
@@ -66,10 +66,10 @@ void IndexManager::insert(const std::filesystem::path &path, bool isIndex) {
 void IndexManager::associateParse(
     const std::filesystem::path &path, const std::shared_ptr<slang::syntax::SyntaxTree> &tree) {
     SPDLOG_TRACE("Now associating parse");
+    // since we have a recursive lock, we'll hold it across the entire duration of this routine
+    auto lock = acquireLock();
     auto result = retrieve(path);
 
-    // hold a lock guard, since we're calling this from CompilerManager which is multi-threaded
-    auto lock = acquireLock();
     if (result.has_value()) {
         (*result)->tree = tree;
         SPDLOG_TRACE("Result has value, attempting to mark as valid");
@@ -80,10 +80,10 @@ void IndexManager::associateParse(
 }
 
 void IndexManager::associateLangDoc(const std::filesystem::path &path, const lang::Document &doc) {
+    // since we have a recursive lock, we'll hold it across the entire duration of this routine
+    auto lock = acquireLock();
     auto result = retrieve(path);
 
-    // hold a lock guard, since we're calling this from CompilerManager which is multi-threaded
-    auto lock = acquireLock();
     if (result.has_value()) {
         (*result)->doc = doc;
     } else {

@@ -42,6 +42,7 @@ if (SLINGSHOT_ENABLE_REMOTE_DEBUGGER)
 endif()
 CPMAddPackage(URI "gh:bobluppes/graaf#e0ec371ae8266fb72d986c0de5c47286f34a0589" OPTIONS "SKIP_TESTS ON"
     "SKIP_EXAMPLES ON" "SKIP_BENCHMARKS ON")
+# CPMAddPackage("gh:yohhoy/yamc#4e015a7e8eb0d61c34e6928676c8c78881a72d73")
 
 add_library(BS_thread_pool INTERFACE)
 target_include_directories(BS_thread_pool INTERFACE ${BS_thread_pool_SOURCE_DIR}/include)

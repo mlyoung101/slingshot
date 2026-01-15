@@ -324,6 +324,8 @@ std::shared_ptr<ast::Compilation> CompilationManager::doAstParse(const std::file
         }
 
         auto docs = requiredDocuments.at(path);
+        // NOTE extremely important we unlock here to prevent deadlocks (see sling issue #72)
+        lock.unlock();
         for (const auto &doc : docs) {
             auto result = g_indexManager.retrieve(doc);
             if (result.has_value() && result != std::nullopt && (*result)->tree != nullptr) {

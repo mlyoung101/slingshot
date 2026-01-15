@@ -141,7 +141,7 @@ public:
     /// Returns a lock on the whole index
     [[nodiscard]] auto acquireLock() {
         SPDLOG_TRACE("Attempt to acquire lock");
-        return std::lock_guard(lock);
+        return std::unique_lock(lock);
     }
 
     /// List of include dirs, pulled from the config TOML
