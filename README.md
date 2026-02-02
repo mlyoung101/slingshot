@@ -35,7 +35,7 @@ aims to:
   - This format is documented in [docs/config.md](docs/config.md)
 - Compatible with Ubuntu 22.04+ and similar Linux distributions
 
-Future features are planned on the [issue tracker](https://github.com/mattyoung101/slingshot/issues).
+Future features are planned on the [issue tracker](https://github.com/mlyoung101/slingshot/issues).
 
 ### Current state
 Slingshot is being rewritten, but _may_ be useful in some simple projects at the moment. Please keep me
