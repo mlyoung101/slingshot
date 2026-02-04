@@ -127,6 +127,7 @@ function(add_slingshot_test TARGET SOURCE)
         src/lang_lifter.cpp
         src/import_locator.cpp
         src/document_graph.cpp
+        test/globals.cpp
         ${SOURCE}
     )
     target_include_directories(${TARGET} PRIVATE include)
