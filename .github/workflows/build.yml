@@ -49,6 +49,9 @@ jobs:
           cd build;
           ninja
 
+      - name: Test
+        run: cd test; ninja test
+
       # we just do this to check it works
       - name: Package
         run: cd build; cpack -G TXZ;
