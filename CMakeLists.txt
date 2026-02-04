@@ -31,7 +31,7 @@ execute_process(COMMAND "mold" "--version" OUTPUT_VARIABLE MOLD_RESULT)
 ## DEPS
 CPMAddPackage("gh:gabime/spdlog@1.16.0")
 CPMAddPackage("gh:fmtlib/fmt#12.1.0")
-CPMAddPackage(URI "gh:MikePopoloski/slang@9.1" OPTIONS "SLANG_USE_MIMALLOC OFF" "SLANG_USE_THREADS OFF")
+CPMAddPackage(URI "gh:MikePopoloski/slang@10.0" OPTIONS "SLANG_USE_MIMALLOC OFF" "SLANG_USE_THREADS OFF")
 CPMAddPackage("gh:martinus/unordered_dense@4.8.1")
 CPMAddPackage("gh:nlohmann/json@3.12.0")
 CPMAddPackage("gh:leon-bckl/lsp-framework#1.3.0")

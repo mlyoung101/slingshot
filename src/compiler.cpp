@@ -365,7 +365,7 @@ void CompilationManager::doAnalysis(
     SPDLOG_TRACE("Perform analysis");
     AnalysisManager analysisMgr;
     analysisMgr.analyze(*compilation);
-    for (const auto &diag : analysisMgr.getDiagnostics(&*sourceMgr)) {
+    for (const auto &diag : analysisMgr.getDiagnostics()) {
         SPDLOG_DEBUG("Got an analysis diagnostic");
         // ensure the diagnostic relates to the file we're compiling
         if (diag.location.buffer() == buf.id) {
