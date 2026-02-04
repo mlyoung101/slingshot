@@ -129,7 +129,7 @@ std::vector<lsp::CompletionItem> CompletionGenerator::generateInputOutput() {
 std::vector<lsp::CompletionItem> CompletionGenerator::generateVariableSameModule(
     const std::optional<std::string> &activeModule, const lang::Document &doc) {
     std::vector<lsp::CompletionItem> out;
-    if (activeModule != std::nullopt) {
+    if (hasValue(activeModule)) {
         auto module = doc.getModuleByName(*activeModule);
         if (module != std::nullopt) {
             for (const auto &port : module->ports) {

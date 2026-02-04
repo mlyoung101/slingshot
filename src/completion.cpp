@@ -147,6 +147,18 @@ void CompletionSyntaxVisitor::handle(const ModuleDeclarationSyntax &syntax) {
     visitDefault(syntax);
 }
 
+constexpr bool recListContains(
+    const std::vector<lsp::CompletionItem> &recs, const lsp::CompletionItem &target) {
+    auto targetKind = target.kind.value_or(lsp::CompletionItemKind::Unit).value();
+    for (const auto &rec : recs) {
+        auto recKind = rec.kind.value_or(lsp::CompletionItemKind::Unit).value();
+        if (recKind == targetKind && rec.label == target.label) {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::vector<lsp::CompletionItem> CompletionManager::getCompletions(
     const std::filesystem::path &path, const lsp::Position &pos, const IndexEntry::Ptr &indexEntry) {
     auto tree = indexEntry->tree;
@@ -157,5 +169,15 @@ std::vector<lsp::CompletionItem> CompletionManager::getCompletions(
     CompletionSyntaxVisitor visitor(cursor, *indexEntry->doc);
     visitor.visit(tree->root());
 
-    return visitor.recommendations;
+    // remove duplicated items
+    std::vector<lsp::CompletionItem> deduped;
+    // FIXME this is something like O(n^2); we should use ankerl::unordered_dense::set (see git stash); it
+    // wasn't compiling after much effort due to std::equal_to shenanigans
+    for (const auto &rec : visitor.recommendations) {
+        if (!recListContains(deduped, rec)) {
+            deduped.push_back(rec);
+        }
+    }
+
+    return deduped;
 }

@@ -14,3 +14,7 @@ build: cmake
 
 build_debug: cmake_debug
     cd build_debug; ninja
+
+build_all:
+    cd build; ninja
+    cd build_debug; ninja

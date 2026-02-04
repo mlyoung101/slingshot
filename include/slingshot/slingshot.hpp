@@ -44,6 +44,13 @@ constexpr void addAll(std::vector<T> &a, const std::vector<T> &b) {
     a.insert(a.end(), b.begin(), b.end());
 }
 
+/// Returns true if the given vector 'v' contains the element 'x'
+template <class T>
+constexpr bool contains(const std::vector<T> &v, const T &x) {
+    // https://stackoverflow.com/a/3450906/5007892
+    return std::find(v.begin(), v.end(), x) != v.end();
+}
+
 constexpr std::string toString(const SourceLocation &loc, const SourceManagerPtr &srcMgr) {
     auto line = srcMgr->getLineNumber(loc);
     auto col = srcMgr->getColumnNumber(loc);
