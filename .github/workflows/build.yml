@@ -71,7 +71,7 @@ jobs:
         run: cd /tmp;
           wget https://apt.llvm.org/llvm.sh;
           chmod +x llvm.sh;
-          sudo ./llvm.sh 21
+          sudo ./llvm.sh 21;
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -89,7 +89,7 @@ jobs:
           make-default: true
 
       - name: Install more system deps
-        run: sudo apt update; sudo apt install --yes clang ninja-build libboost-all-dev
+        run: sudo apt update; sudo apt install --yes clang ninja-build libboost-all-dev clang-tidy-21 clang-format-21
 
       - name: Build
         run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_EXPORT_COMPILE_COMMANDS=1
