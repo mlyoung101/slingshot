@@ -98,7 +98,7 @@ jobs:
           ninja
 
       - name: Run clang-tidy
-        run: run-clang-tidy -p build -config-file .clang-tidy -source-filter $(pwd)/src/ -use-color
+        run: run-clang-tidy-21 -p build -config-file .clang-tidy -source-filter $(pwd)/src/ -use-color
 
   # build-windows:
   #   name: Build Windows
