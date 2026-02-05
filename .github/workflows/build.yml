@@ -56,11 +56,49 @@ jobs:
       - name: Package
         run: cd build; cpack -G TXZ;
 
-      # - name: Archive artefacts
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: slingshot-linux-${{ matrix.build_type }}
-      #     path: build/slingshot
+  run-clang-tidy:
+    name: Run clang-tidy
+    runs-on: ubuntu-22.04
+    env:
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
+      CMAKE_C_COMPILER_LAUNCHER: ccache
+      CC: /usr/lib/ccache/clang-21
+      CXX: /usr/lib/ccache/clang++-21
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Clang
+        run: cd /tmp;
+          wget https://apt.llvm.org/llvm.sh;
+          chmod +x llvm.sh;
+          sudo ./llvm.sh 21
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          create-symlink: true
+
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '4.1.x'
+
+      - name: Setup mold
+        uses: rui314/setup-mold@v1
+        with:
+          make-default: true
+
+      - name: Install more system deps
+        run: sudo apt update; sudo apt install --yes clang ninja-build libboost-all-dev
+
+      - name: Build
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache;
+          cd build;
+          ninja
+
+      - name: Run clang-tidy
+        run: run-clang-tidy -p build -config-file .clang-tidy -source-filter $(pwd)/src/ -use-color
 
   # build-windows:
   #   name: Build Windows
