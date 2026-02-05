@@ -50,7 +50,7 @@ jobs:
           ninja
 
       - name: Test
-        run: cd test; ninja test
+        run: cd build; ninja test
 
       # we just do this to check it works
       - name: Package
