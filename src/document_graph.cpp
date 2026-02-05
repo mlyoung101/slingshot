@@ -35,7 +35,7 @@ void DocumentGraph::linkDocuments(
 
 std::optional<std::vector<std::filesystem::path>> DocumentGraph::topologicalSort() {
     std::optional<std::vector<graaf::vertex_id_t>> sorted = graaf::algorithm::dfs_topological_sort(graph);
-    if (!hasValue(sorted)) {
+    if (!sorted.has_value()) {
         SPDLOG_ERROR("Failed to perform topological sort of document graph; this graph has cycles!");
         SPDLOG_ERROR("This probably means your project is malformed and has dependency cycles.");
 

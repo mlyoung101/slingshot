@@ -23,3 +23,5 @@ Checks: >
   -readability-redundant-member-init,
   -misc-non-private-member-variables-in-classes,
   -cppcoreguidelines-non-private-member-variables-in-classes,
+  -misc-include-cleaner,
+  -misc-no-recursion,

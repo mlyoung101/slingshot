@@ -56,7 +56,7 @@ void IndexManager::insert(const std::filesystem::path &path, const std::string &
 void IndexManager::insert(const std::filesystem::path &path, bool isIndex) {
     // read the file to a string
     // TODO does this bugger all error checking
-    std::ifstream t(path);
+    const std::ifstream t(path);
     std::stringstream buffer;
     buffer << t.rdbuf();
 
@@ -191,7 +191,7 @@ std::string IndexManager::dumpLangTrees() {
         const auto &[key, value] = entry;
         if (value->doc != std::nullopt) {
             auto doc = *value->doc;
-            nlohmann::json docJson = doc;
+            const nlohmann::json docJson = doc;
             stream << fmt::format("Document: {}\n{}\n\n", key.string(), docJson.dump(4));
         }
     }
@@ -215,7 +215,7 @@ std::vector<lang::Document> IndexManager::getAllLangDocs() {
     auto lock = acquireLock();
     std::vector<lang::Document> out;
     for (const auto &[key, value] : index) {
-        if (hasValue(value->doc)) {
+        if (value->doc.has_value()) {
             out.push_back(*value->doc);
         }
     }
