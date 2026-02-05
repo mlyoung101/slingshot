@@ -71,11 +71,6 @@ constexpr std::string toString(const std::optional<std::filesystem::path> &value
     return "(null)";
 }
 
-template <typename T>
-constexpr bool hasValue(const std::optional<T> &opt) {
-    return opt.has_value() && opt != std::nullopt;
-}
-
 constexpr std::string readFile(const std::filesystem::path &path) {
     // TODO does this bugger all error checking
     std::ifstream t(path);

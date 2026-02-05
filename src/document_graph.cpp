@@ -130,10 +130,10 @@ void DocumentGraph::finaliseOutstandingSymbols() {
         SPDLOG_DEBUG("Still unresolved symbol '{}': LHS '{}', RHS '{}'", sym.symbol, toString(sym.lhs),
             toString(sym.rhs));
 
-        if (!hasValue(sym.lhs)) {
+        if (!sym.lhs.has_value()) {
             // see if we can find a resolver for this symbol in the graph
             auto provider = findProvider(sym.symbol);
-            if (hasValue(provider)) {
+            if (provider.has_value()) {
                 SPDLOG_DEBUG("Found provider for symbol '{}': '{}'", sym.symbol, provider->string());
                 linkDocuments(*provider, *sym.rhs, sym.symbol);
                 it = unresolvedSymbols.erase(it);

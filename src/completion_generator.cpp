@@ -131,17 +131,18 @@ std::vector<lsp::CompletionItem> CompletionGenerator::generateVariableSameModule
     std::vector<lsp::CompletionItem> out;
     if (activeModule.has_value()) {
         auto module = doc.getModuleByName(*activeModule);
-        if (module != std::nullopt) {
+        if (module.has_value()) {
             for (const auto &port : module->ports) {
                 out.push_back(lsp::CompletionItem {
                     .label = port.name,
                     .kind = lsp::CompletionItemKind::Field,
                 });
             }
-        }
 
-        for (const auto &var : module->variables) {
-            out.push_back(lsp::CompletionItem { .label = var, .kind = lsp::CompletionItemKind::Variable });
+            for (const auto &var : module->variables) {
+                out.push_back(
+                    lsp::CompletionItem { .label = var, .kind = lsp::CompletionItemKind::Variable });
+            }
         }
     }
     return out;

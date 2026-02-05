@@ -7,14 +7,14 @@
 #include "lsp/connection.h"
 #include "lsp/io/standardio.h"
 #include "lsp/messagehandler.h"
-#include "lsp/types.h"
 #include "lsp/messages.h"
+#include "lsp/types.h"
 #include "slang/util/VersionInfo.h"
 #include "slingshot/compiler.hpp"
 #include "slingshot/handlers.hpp"
 #include "slingshot/slingshot.hpp"
-#include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/spdlog.h"
 #include <csignal>
 #include <exception>
@@ -76,8 +76,6 @@ int main() {
 
     std::filesystem::create_directories(homeDir + "/.local/share/slingshot");
 
-    int pid = getpid();
-
     std::filesystem::path logPath
         = homeDir + "/.local/share/slingshot/slingshot.log"; // + std::to_string(pid) + ".log";
     // auto rotating = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logPath, 4096 * 1024, 5, false);
@@ -90,7 +88,8 @@ int main() {
         sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e thread %t] [%^%l%$] [%s:%# %!] %v");
     }
 
-    SPDLOG_INFO("Slingshot LSP v{} - (c) 2023-2025 M. L. Young. Licenced under the MPL 2.0.", SLINGSHOT_VERSION);
+    SPDLOG_INFO(
+        "Slingshot LSP v{} - (c) 2023-2025 M. L. Young. Licenced under the MPL 2.0.", SLINGSHOT_VERSION);
     SPDLOG_INFO("Slang version: {}.{}", VersionInfo::getMajor(), VersionInfo::getMinor());
 
     g_debugger.boot(REMOTE_DEBUGGER_PORT);

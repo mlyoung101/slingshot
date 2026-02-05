@@ -25,3 +25,4 @@ Checks: >
   -cppcoreguidelines-non-private-member-variables-in-classes,
   -misc-include-cleaner,
   -misc-no-recursion,
+  -llvm-prefer-static-over-anonymous-namespace,

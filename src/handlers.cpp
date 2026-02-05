@@ -1,6 +1,6 @@
 // Slingshot: A SystemVerilog language server.
 //
-// Copyright (c) 2025 M. L. Young.
+// Copyright (c) 2025-2026 M. L. Young.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -157,6 +157,15 @@ void textDocumentChange(const lsp::notifications::TextDocument_DidChange::Params
                 }
             },
             change);
+    }
+}
+
+void textDocumentSave(const lsp::notifications::TextDocument_DidSave::Params &&params) {
+    SPDLOG_TRACE("Did save document: {}", params.textDocument.uri.path());
+
+    if (params.text.has_value()) {
+        // register in the document database
+        g_indexManager.insert(std::filesystem::absolute(params.textDocument.uri.path()), *params.text, false);
     }
 }
 
