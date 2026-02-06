@@ -332,6 +332,8 @@ std::shared_ptr<ast::Compilation> CompilationManager::doAstParse(const std::file
         lock.unlock();
         for (const auto &doc : docs) {
             auto result = g_indexManager.retrieve(doc);
+            // we need an index lock before we can read, see: https://github.com/mlyoung101/slingshot/issues/72#issuecomment-3858321765
+            auto lock = g_indexManager.acquireLock();
             if (result.has_value() && result != std::nullopt && (*result)->tree != nullptr) {
                 SPDLOG_TRACE("{} ---(requires)---> {}", path.string(), doc.string());
                 compilation->addSyntaxTree((*result)->tree);
